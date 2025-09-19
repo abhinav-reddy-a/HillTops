@@ -98,6 +98,23 @@ def run_play(name: str, port: int):
             except Exception:
                 pass
 
+def run_results(port: int):
+    """
+    Asks the hilltops server to send results and shutdown
+    """
+    proc = subprocess.Popen(
+        ["nc", "127.0.0.1", str(port)],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True
+    )
+
+    proc.stdin.write("RESULTS\n")
+    proc.stdin.flush()
+    out, _ = proc.communicate()
+    print(out)
+
+
 if __name__ == "__main__":
     
     # Command line arguments
@@ -105,14 +122,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", default="Player", help="Player name to send in PLAY command")
     parser.add_argument("--port", type=int, default=5555, help="Server port")
+    parser.add_argument("--results", action="store_true", help="Asks the server for results when true")
     args = parser.parse_args()
 
-    R, C, M, verdict = run_play(args.name, port=args.port)
+    if (args.results):
+        run_results(port=args.port)
+    else:
+        R, C, M, verdict = run_play(args.name, port=args.port)
 
-    # Do whatever you want with the matrix:
-    # (here we just show it once for demo; remove if you want *no* output at all)
-    print("R, C =", R, C)
-    print("Matrix:")
-    for row in M:
-        print(" ".join(map(str, row)))
-    print("Verdict:", verdict)
+        # Do whatever you want with the matrix:
+        # (here we just show it once for demo; remove if you want *no* output at all)
+        print("R, C =", R, C)
+        print("Matrix:")
+        for row in M:
+            print(" ".join(map(str, row)))
+        print("Verdict:", verdict)
