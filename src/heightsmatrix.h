@@ -11,6 +11,7 @@
 #include <numeric>
 #include <algorithm>
 #include <climits>
+#include <iomanip>
 
 class HeightsMatrix {
 private:
@@ -18,6 +19,9 @@ private:
 
     int rows, cols;
     int minVal, minRow, minCol;
+
+    std::vector<bool> reachable;
+    std::vector<int> worstDistance;
 
     int dr[4] = {-1, 1, 0, 0};
     int dc[4] = {0, 0, -1, 1};
@@ -62,6 +66,8 @@ private:
         return order;
     }
 
+    auto idx(int r, int c) { return r * cols + c; };
+
 public:
     explicit HeightsMatrix(std::vector<std::vector<int>>&& heightsMatrix, int rows, int cols) : heights(std::move(heightsMatrix)), rows(rows), cols(cols) {
     }
@@ -74,12 +80,11 @@ public:
     std::pair<bool,int> isHilltopPerfect () {
         findMinimum();
 
-        auto idx = [&] (int r, int c) { return r * cols + c; };
         int N = rows * cols;
 
         std::vector<int> order = getTopoOrderOfCells();
-        std::vector<bool> reachable(N, false);
-        std::vector<int> worstDistance(N, -1);
+        reachable = std::vector<bool>(N, false);
+        worstDistance = std::vector<int>(N, -1);
 
         reachable[idx(minRow, minCol)] = true;
         worstDistance[idx(minRow, minCol)] = 0;
@@ -129,12 +134,32 @@ public:
     void print() {
         for(int i = 0; i < rows; ++i) {
             for(int j = 0; j < cols; ++j) {
-                std::cout << heights[i][j] << " ";
+                std::cout << std::setw(3) << heights[i][j];
+                std::cout << " ";
             }
             std::cout << std::endl;
         }
     }
 
+    void printreachable() {
+        for(int i = 0; i < rows; ++i) {
+            for(int j = 0; j < cols; ++j) {
+                std::cout << std::setw(3) << (reachable[idx(i, j)] ? "1" : "0");
+                std::cout << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void printworstDistance() {
+        for(int i = 0; i < rows; ++i) {
+            for(int j = 0; j < cols; ++j) {
+                std::cout << std::setw(3) << worstDistance[idx(i, j)];
+                std::cout << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
 };
 
 #endif //HEIGHTSMATRIX_H

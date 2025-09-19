@@ -25,7 +25,7 @@
  *
  * Logging:
  *   Per-connection log file: session_<pid>_<conn_idx>_<player>.txt
- *   Includes: initial matrix, swaps, matrix **after every swap**, final matrix, verdict.
+ *   Includes: initial matrix, swaps, matrix **after every swap**, final matrix, worst distances & reachability matrices, verdict.
  *
  * Notes:
  *   - Simple, blocking, one client at a time. Incoming connections queue in backlog.
@@ -191,8 +191,8 @@ static bool run_one_game(int cfd, const std::string &player, const std::string &
     int R, C; std::vector<std::vector<int>> A;
     std::tie(R, C, A) = *loaded;
 
-    log << "=== Player: " << player << " ===\n";
-    log << "=== Initial Matrix (" << R << 'x' << C << ") ===\n";
+    log << "\n=== Player: " << player << " ===\n";
+    log << "\n=== Initial Matrix (" << R << 'x' << C << ") ===\n";
     print_matrix(log, A);
 
     // Send matrix and request swaps
@@ -216,12 +216,6 @@ static bool run_one_game(int cfd, const std::string &player, const std::string &
         swaps.push_back(s);
     }
 
-    log << "=== Swaps (N=" << N << ") ===\n";
-    for (int i = 0; i < N; ++i) {
-        log << i+1 << ": (" << swaps[i].x1 << ',' << swaps[i].y1
-            << ") <-> (" << swaps[i].x2 << ',' << swaps[i].y2 << ")\n";
-    }
-
     HeightsMatrix H(std::move(A), R, C);
     // Apply swaps and log matrix after each
     for (int i = 0; i < N; ++i) {
@@ -232,7 +226,7 @@ static bool run_one_game(int cfd, const std::string &player, const std::string &
             record_attempt(player, /*ok=*/false, /*swaps=*/-1, /*maxWorst=*/-1);
             return false;
         }
-        log << "--- After swap " << (i+1) << " ---\n";
+        log << "--- After swap " << (i+1) << " : " << "(" << swaps[i].x1 << ',' << swaps[i].y1 << ") <-> (" << swaps[i].x2 << ',' << swaps[i].y2 << ")"  << " ---\n";
         {
             std::ostringstream oss; std::streambuf *old = std::cout.rdbuf(oss.rdbuf()); H.print(); std::cout.rdbuf(old); log << oss.str();
         }
@@ -240,10 +234,22 @@ static bool run_one_game(int cfd, const std::string &player, const std::string &
 
     auto [ok, maxWorst] = H.isHilltopPerfect();
 
-    log << "=== Final Matrix ===\n";
+    log << "\n=== Final Matrix ===\n";
     {
         std::ostringstream oss; std::streambuf *old = std::cout.rdbuf(oss.rdbuf()); H.print(); std::cout.rdbuf(old); log << oss.str();
     }
+	
+    log << "\n=== Reachability ===\n";
+    {
+        std::ostringstream oss; std::streambuf *old = std::cout.rdbuf(oss.rdbuf()); H.printreachable(); std::cout.rdbuf(old); log << oss.str();
+    }
+
+    log << "\n=== Worst Distances ===\n";
+    {
+        std::ostringstream oss; std::streambuf *old = std::cout.rdbuf(oss.rdbuf()); H.printworstDistance(); std::cout.rdbuf(old); log << oss.str();
+    }
+
+    log << "\n";
 
     if (ok) {
         std::ostringstream out; out << "OK " << N << ' ' << maxWorst << "\n"; send_all(cfd, out.str());
