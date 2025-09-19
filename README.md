@@ -80,8 +80,13 @@ These log files include &rarr;
 - Matrix after each swap
 - Final matrix
 - Reachability matrix &rarr; Matrix displaying all the cells that drain into the minimum cell as "1" and all the cells that don't drain into the minimum cell as "0"
-- Worst Distances matrox &rarr; Worse distances to the minimum cell for each cell
+- Worst Distances matrix &rarr; Worst distances to the minimum cell for each cell
 - Verdict
+
+### Matrix file format
+The initial matrix file has to follow this format &rarr;
+- First line &rarr; `<rows> <columns>`
+- Subsequent line &rarr; A row in each line with space-separated ints
 
 
 
