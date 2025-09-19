@@ -45,6 +45,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <map>
 #include <memory>
 #include <optional>
@@ -99,8 +100,10 @@ static std::optional<std::string> recv_line(int fd) {
 static void print_matrix(std::ostream &os, const std::vector<std::vector<int>> &m) {
     for (const auto &row : m) {
         for (size_t j = 0; j < row.size(); ++j) {
-            os << row[j] << (j + 1 == row.size() ? '\n' : ' ');
+            os << std::setw(3) << row[j]; 
+	    os << ' ';
         }
+	os << '\n';
     }
 }
 
