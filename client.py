@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import subprocess
+import argparse
 
 def _readline(pipe) -> str:
     """Read one line (stripped of CR/LF). Returns '' on EOF."""
@@ -30,9 +31,13 @@ def _read_matrix(stdout):
     return R, C, M
 
 def your_algorithm(M):
+    """
+    This function gets a matrix, and returns swaps
+    You only need to edit this
+    """
     return [[0,0,2,2],[1,0,1,2]]
 
-def run_play(name: str):
+def run_play(name: str, port: int):
     """
     Talk to the hilltops server via `nc`, play one game, and return:
         (R, C, matrix, verdict_line)
@@ -41,7 +46,7 @@ def run_play(name: str):
     """
     # Start netcat
     proc = subprocess.Popen(
-        ["nc", "127.0.0.1", "5555"],
+        ["nc", "127.0.0.1", str(port)],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         text=True,
@@ -94,8 +99,15 @@ def run_play(name: str):
                 pass
 
 if __name__ == "__main__":
-    # Example usage: read matrix, send two swaps, capture verdict (no printing server stuff)
-    R, C, M, verdict = run_play("Abhi")
+    
+    # Command line arguments
+    # Run as python cient.py --name <name> --port <port>
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", default="Player", help="Player name to send in PLAY command")
+    parser.add_argument("--port", type=int, default=5555, help="Server port")
+    args = parser.parse_args()
+
+    R, C, M, verdict = run_play(args.name, port=args.port)
 
     # Do whatever you want with the matrix:
     # (here we just show it once for demo; remove if you want *no* output at all)
